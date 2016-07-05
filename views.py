@@ -18,6 +18,7 @@
 from mediagoblin import messages
 import mediagoblin.mg_globals as mg_globals
 from os.path import splitext
+from six import text_type
 
 import logging
 import uuid
@@ -63,7 +64,7 @@ def multi_submit_start(request):
   filecount = 0
   if request.method == 'POST' and submit_form.validate():
     if not check_file_field(request, 'file'):
-      submit_form.file.errors.append(_(u'You must provide at least one file.'))
+      submit_form.file.errors.append(_('You must provide at least one file.'))
     else:
       for submitted_file in request.files.getlist('file'):
         try:
@@ -76,7 +77,7 @@ def multi_submit_start(request):
 
             # If the filename contains non ascii generate a unique name
             if not all(ord(c) < 128 for c in filename):
-              filename = unicode(uuid.uuid4()) + splitext(filename)[-1]
+              filename = text_type(uuid.uuid4()) + splitext(filename)[-1]
 
             # Sniff the submitted media to determine which
             # media plugin should handle processing
@@ -85,14 +86,14 @@ def multi_submit_start(request):
 
             # create entry and save in database
             entry = new_upload_entry(request.user)
-            entry.media_type = unicode(media_type)
+            entry.media_type = text_type(media_type)
             entry.title = (
-              unicode(submit_form.title.data)
-              or unicode(splitext(submitted_file.filename)[0]))
+              text_type(submit_form.title.data)
+              or text_type(splitext(submitted_file.filename)[0]))
 
-            entry.description = unicode(submit_form.description.data)
+            entry.description = text_type(submit_form.description.data)
 
-            entry.license = unicode(submit_form.license.data) or None
+            entry.license = text_type(submit_form.license.data) or None
 
             # Process the user's folksonomy "tags"
             entry.tags = convert_to_tag_list_of_dicts(
